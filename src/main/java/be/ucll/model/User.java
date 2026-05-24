@@ -1,6 +1,7 @@
 package be.ucll.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -32,11 +33,35 @@ public class User {
     @Length(min = 8, message = "Password must be at least 8 characters long")
     private String password;
 
+    @OneToOne
+    @JoinColumn(name = "profile_id")
+    @Valid
+    private Profile profile;
+
+
+    // zonder profiel
     public User(String name, int age, String email, String password) {
         setName(name);
         setAge(age);
         setEmail(email);
         setPassword(password);
+    }
+
+    public User(String name, int age, String email, String password, Profile profile) {
+        setName(name);
+        setAge(age);
+        setEmail(email);
+        setPassword(password);
+        setProfile(profile);
+    }
+
+    public Profile getProfile() { return profile; }
+
+    public void setProfile(Profile profile) {
+        if (profile != null && this.age < 18) {
+            throw new RuntimeException("User must be at least 18 years old to have a profile.");
+        }
+        this.profile = profile;
     }
 
     protected User() {

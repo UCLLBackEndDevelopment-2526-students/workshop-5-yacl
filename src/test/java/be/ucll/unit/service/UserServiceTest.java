@@ -4,10 +4,13 @@ import be.ucll.model.User;
 import be.ucll.repository.LoanRepository;
 import be.ucll.repository.UserRepository;
 import be.ucll.service.UserService;
+import be.ucll.unit.repository.ProfileRepositoryStub;
+import be.ucll.unit.repository.UserRepositoryStub;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -19,8 +22,8 @@ public class UserServiceTest {
 
     @BeforeEach
     public void setUp() {
-        userRepository = new UserRepository();
-        userService = new UserService(userRepository, new LoanRepository());
+        userRepository = new UserRepositoryStub();
+        userService = new UserService(userRepository, new LoanRepository(), new ProfileRepositoryStub());
     }
 
     @Test
@@ -29,8 +32,8 @@ public class UserServiceTest {
         List<User> result = userService.getAllUsers();
 
         // then
-        assertEquals(userRepository.getUsers().size(), result.size());
-        assertTrue(userRepository.getUsers().containsAll(result));
+        assertEquals(userRepository.findAll().size(), result.size());
+        assertTrue(userRepository.findAll().containsAll(result));
     }
 
     @Test
@@ -52,10 +55,10 @@ public class UserServiceTest {
     @Test
     public void givenUserRepositoryWithNoAdultUsers_whenGetAdults_thenReturnEmptyList() {
         // given
-        userRepository.setUsers(List.of(
-                    new User("Jack Doe", 5, "jack.doe@ucll.be", "jack1234"),
-                    new User("Sarah Doe", 4, "sarah.doe@ucll.be", "sarah1234")));
-
+        UserRepositoryStub stub = (UserRepositoryStub) userRepository;
+        stub.users = new ArrayList<>(List.of(
+                new User("Jack Doe", 5, "jack.doe@ucll.be", "jack1234"),
+                new User("Sarah Doe", 4, "sarah.doe@ucll.be", "sarah1234")));
         // when
         List<User> users = userService.getAllAdultUsers();
 
@@ -68,7 +71,8 @@ public class UserServiceTest {
     @Test
     public void givenUserRepositoryWithNoUsers_whenGetAdults_thenReturnEmptyList() {
         // given
-        userRepository.setUsers(List.of());
+        UserRepositoryStub stub = (UserRepositoryStub) userRepository;
+        stub.users = new ArrayList<>();
 
         // when
         List<User> users = userService.getAllAdultUsers();
@@ -96,7 +100,8 @@ public class UserServiceTest {
     @Test
     public void givenUserRepositoryWithNoUsers_whenGetUsersBetweenAge5And25_thenReturnEmptyList() {
         // given
-        userRepository.setUsers(List.of());
+        UserRepositoryStub stub = (UserRepositoryStub) userRepository;
+        stub.users = new ArrayList<>();
 
         // when
         List<User> users = userService.getUsersBetweenAge(5, 25);
@@ -108,7 +113,8 @@ public class UserServiceTest {
     @Test
     public void givenUserRepositoryWithNoUsersBetweenAge5And25_whenGetUsersBetweenAge5And25_thenReturnEmptyList() {
         // given
-        userRepository.setUsers(List.of(
+        UserRepositoryStub stub = (UserRepositoryStub) userRepository;
+        stub.users = new ArrayList<>(List.of(
                 new User("Jack Doe", 55, "jack.doe@ucll.be", "jack1234"),
                 new User("Sarah Doe", 4, "sarah.doe@ucll.be", "sarah1234")));
 
@@ -262,8 +268,8 @@ public class UserServiceTest {
         userService.deleteUser(existingEmail);
 
         // then
-        assertFalse(userRepository.userExists(existingEmail));
-        assertEquals(4, userRepository.getUsers().size());
+        assertFalse(userRepository.existsByEmail(existingEmail));
+        assertEquals(4, userRepository.findAll().size());
     }
 
     @Test

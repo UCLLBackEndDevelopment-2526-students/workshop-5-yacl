@@ -26,4 +26,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     List<User> findByNameContainingAndAgeGreaterThan(String chars, int age);
 
+    List<User> findByProfileInterestsContainingIgnoreCaseOrderByProfileLocationAsc(String interest);
+
+    List<User> findByAgeGreaterThanAndProfileInterestsContainingIgnoreCaseOrderByProfileLocationAsc(int age, String interest);
+
 }
